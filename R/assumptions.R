@@ -42,7 +42,7 @@ dox_boxplot = function(formula, dataset, color=NULL, facet = NULL){
 
   p1=ggplot(data = dataset, aes(x = .data[[x1]], y = .data[[response]])) +
     geom_boxplot() +
-    theme(axis.title=element_text(size=36,face="bold"), axis.text.x = element_text(size = 12, angle = 90))
+    theme(axis.title=element_text(size=14,face="bold"), axis.text.x = element_text(size = 12, angle = 45))
 
 
   facet_str = deparse(substitute(facet))
@@ -59,7 +59,7 @@ dox_boxplot = function(formula, dataset, color=NULL, facet = NULL){
   }
 
   if(color_str!="NULL"){
-    p1=p1
+    p1=p1+aes(colour = .data[[color_str]])
 
     # p1=p1+stat_summary(aes(group = interaction(.data[[x1]], .data[[color_str]])),
     #                    fun = mean,
