@@ -40,9 +40,7 @@ dox_boxplot = function(formula, dataset, color=NULL, facet = NULL){
     color_str=x2
   }
 
-  p1=ggplot(data = dataset, aes(x = .data[[x1]], y = .data[[response]])) +
-    geom_boxplot() +
-    theme(axis.title=element_text(size=36,face="italic"), axis.text.x = element_text(size = 12, angle = 90))
+  p1=ggplot(data = dataset, aes(x = .data[[x1]], y = .data[[response]]))
 
 
   facet_str = deparse(substitute(facet))
