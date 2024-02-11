@@ -20,7 +20,59 @@
 # # if you want to use two-dimensional facet
 #' dox_boxplot(LogStrength ~ Brand, Towels2, facet = Brand~Water)
 
+dox_boxplot = function(formula, dataset, color=NULL, facet = NULL){
+  formula=as.formula(formula)
+  response = all.vars(formula)[1]
+  x1 = all.vars(formula)[2]
+  x2 = all.vars(formula)[3]
 
+  if(is.numeric(dataset[[x1]])){
+    error_message = paste("Variable \"", x1, "\" needs to be a factor. Currently numeric.")
+    stop(error_message)
+  }
+  color_str = deparse(substitute(color))
+  if(color_str!="NULL" && (is.numeric(dataset[,color_str]))){
+    error_message = paste("Variable \"", color_str, "\" needs to be a factor. Currently numeric.")
+    stop(error_message)
+  }
+
+  if(color_str=="NULL" && !is.na(x2)){
+    color_str=x2
+  }
+
+  p1=ggplot(data = dataset, aes(x = .data[[x1]], y = .data[[response]])) +
+    geom_boxplot() +
+    theme(axis.title=element_text(size=36,face="bold"), axis.text.x = element_text(size = 12, angle = 90))
+
+
+  facet_str = deparse(substitute(facet))
+  if (grepl("~", facet_str)){
+    p1 = p1+facet_grid(facet_str)
+  }
+  else if (facet_str != "NULL"){
+    if(facet_str != "NULL" && is.numeric(dataset[,facet_str])){
+      error_message = paste("Variable \"", facet_str, "\" needs to be a factor. Currently numeric.")
+      stop(error_message)
+    }
+    facet_formula = as.formula(paste(". ~ ",facet_str))
+    p1=p1+facet_grid(facet_formula)
+  }
+
+  if(color_str!="NULL"){
+    p1=p1
+
+    # p1=p1+stat_summary(aes(group = interaction(.data[[x1]], .data[[color_str]])),
+    #                    fun = mean,
+    #                    geom = "point",
+    #                    shape = 20,
+    #                    size = 4,
+    #                    color = "red",
+    #                    fill = "red",
+    #                    show.legend = FALSE)
+  }
+
+  p1
+  }
 
 
 #' A scatterplot to check the equal variances assumption in ANOVA
