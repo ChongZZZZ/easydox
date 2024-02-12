@@ -207,28 +207,38 @@ dox_pairs <- function(formula,dataset, alpha = 0.05, method = "All") {
   }
 }
 
+#' An ANOVA table
+#'
+#' This function gives an ANOVA summary table with total degrees of freedom and sum of squares
+#' @param formula formula used in ANOVA
+#' @param dataset the dataset that contains the experiment information
+#' @return a print table
+#' @export
+#' @examples
+#' dox_anova(LogStrength ~ Brand, Towels2)
+
 dox_anova=function(formula, dataset){
   anova <- aov(formula, dataset)
   # Summary of the ANOVA
   summary_anova <- summary(anova)
-  
+
   # Extract the main table from the summary
   anova_table <- summary_anova[[1]]
-  
+
   # Calculate sums for relevant columns
   total_df <- sum(anova_table$Df)
   total_sum_sq <- sum(anova_table$"Sum Sq")
-  
+
   # You might not have a meaningful sum for Mean Sq, F value, and Pr(>F) for the total row
   # But you can calculate the total Mean Sq if needed
   # total_mean_sq <- total_sum_sq / total_df
-  
+
   # Create a new row for totals
   total_row <- c(Df = total_df, `Sum Sq` = total_sum_sq, `Mean Sq` = NA, `F value` = NA, `Pr(>F)` = NA)
-  
+
   # Append this row to the original ANOVA table
   anova_table_with_total <- rbind(anova_table, Total = total_row)
-  
+
   # Print the modified table
   print(anova_table_with_total)
 }
