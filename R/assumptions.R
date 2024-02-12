@@ -75,6 +75,63 @@ dox_boxplot = function(formula, dataset, color=NULL, facet = NULL){
   }
 
 
+
+dox_flextable = function(formula, dataset){
+  formula <- as.formula(formula)
+  response <- all.vars(formula)[1]
+  x1 <- all.vars(formula)[2]
+  x2 <- all.vars(formula)[3]
+  x3 <- all.vars(formula)[4]
+  x4 <- all.vars(formula)[5]
+  
+  if(is.numeric(dataset[[x1]])){
+    error_message <- paste("Variable \"", x1, "\" needs to be a factor. Currently numeric.")
+    stop(error_message)
+  }
+  
+  if(is.numeric(dataset[[x2]])){
+    error_message <- paste("Variable \"", x2, "\" needs to be a factor. Currently numeric.")
+    stop(error_message)
+  }
+  
+  if(is.numeric(dataset[[x3]])){
+    error_message <- paste("Variable \"", x3, "\" needs to be a factor. Currently numeric.")
+    stop(error_message)
+  }
+  
+  if(is.numeric(dataset[[x4]])){
+    error_message <- paste("Variable \"", x4, "\" needs to be a factor. Currently numeric.")
+    stop(error_message)
+  }
+  
+  if (is.na(x2)){
+    data_groupby <- group_by(dataset, .data[[x1]])
+  }
+  else if (is.na(x3)){
+    data_groupby <- group_by(dataset, .data[[x1]], .data[[x2]])
+  }
+  else if(is.na(x4)){
+    data_groupby <- group_by(dataset, .data[[x1]], .data[[x2]], .data[[x3]])
+  }
+  else{
+    data_groupby <- group_by(dataset, .data[[x1]], .data[[x2]], .data[[x3]], .data[[x4]])
+  }
+  
+  summary_table <- data_groupby %>%
+    summarise(StandardDeviation = sd(.data[[response]]),
+              SampleSize = n(), .groups = 'drop')
+  summary_df <- as.data.frame(summary_table)
+  summary_df <- summary_df %>%
+    mutate_if(is.numeric, round, digits = 2)
+  
+  flextable_obj <- flextable(summary_df)
+  
+  
+  
+  return(flextable_obj)
+}
+
+
 #' A scatterplot to check the equal variances assumption in ANOVA
 #'
 #' This function gives a scatterplot to check the within groups equal variances assumptions.
