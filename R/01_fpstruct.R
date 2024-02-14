@@ -85,12 +85,6 @@ par_struct <- function(nrow, keys,
 }
 
 
-print.par_struct <- function(x, ...) {
-  dims <- dim(x$text.align$data)
-  cat("a par_struct with ", dims[1], " rows and ", dims[2], " columns", sep = "")
-}
-
-
 par_struct_to_df <- function(object, ...) {
   data <- lapply(object, function(x) {
     as.vector(x$data)
