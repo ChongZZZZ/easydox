@@ -4,7 +4,7 @@
 \alias{as_chunk}
 \title{Chunk of text wrapper}
 \usage{
-as_chunk(x, props = NULL, formatter = format_fun, ...)
+as_chunk(x, props = NULL, formatter = NULL, ...)
 }
 \arguments{
 \item{x}{text or any element that can be formatted as text

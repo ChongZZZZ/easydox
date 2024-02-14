@@ -148,7 +148,7 @@ default_fptext_prop <- structure(
 #' ft <- color(ft, color = "gray40", part = "all")
 #' ft <- autofit(ft)
 #' ft
-as_chunk <- function(x, props = NULL, formatter = format_fun, ...) {
+as_chunk <- function(x, props = NULL, formatter = NULL, ...) {
   if (is.function(x)) {
     stop("argument `x` in function `as_chunk` cannot be a function", call. = FALSE)
   }
@@ -453,7 +453,7 @@ as_bracket <- function(..., sep = ", ", p = "(", s = ")") {
 #' )
 #' ftab
 #' @family chunk elements for paragraph
-hyperlink_text <- function(x, props = NULL, formatter = format_fun, url, ...) {
+hyperlink_text <- function(x, props = NULL, formatter = NULL, url, ...) {
   zz <- data.frame(x = x, url = url, stringsAsFactors = FALSE)
   x <- as_chunk(x = zz$x, props = props, formatter = formatter, ...)
   x$url <- zz$url
@@ -732,7 +732,7 @@ as_paragraph <- function(..., list_values = NULL) {
   is_atomic <- sapply(list_values, is.atomic)
   if (any(is_atomic)) {
     list_values[is_atomic] <- lapply(list_values[is_atomic], function(x) {
-      as_chunk(x, formatter = format_fun)
+      as_chunk(x)
     })
   }
 

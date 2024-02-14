@@ -4,7 +4,7 @@
 \alias{hyperlink_text}
 \title{Chunk of text with hyperlink}
 \usage{
-hyperlink_text(x, props = NULL, formatter = format_fun, url, ...)
+hyperlink_text(x, props = NULL, formatter = NULL, url, ...)
 }
 \arguments{
 \item{x}{text or any element that can be formatted as text
