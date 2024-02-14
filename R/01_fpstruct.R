@@ -1,3 +1,58 @@
+# text_struct ------
+text_struct <- function(nrow, keys,
+                        color = "black", font.size = 10,
+                        bold = FALSE, italic = FALSE, underlined = FALSE,
+                        font.family = "Arial",
+                        hansi.family = "Arial", eastasia.family = "Arial", cs.family = "Arial",
+                        vertical.align = "baseline",
+                        shading.color = "transparent", ...) {
+  x <- list(
+    color = fpstruct(nrow = nrow, keys = keys, default = color),
+    font.size = fpstruct(nrow = nrow, keys = keys, default = font.size),
+    bold = fpstruct(nrow = nrow, keys = keys, default = bold),
+    italic = fpstruct(nrow = nrow, keys = keys, default = italic),
+    underlined = fpstruct(nrow = nrow, keys = keys, default = underlined),
+    font.family = fpstruct(nrow = nrow, keys = keys, default = font.family),
+    hansi.family = fpstruct(nrow = nrow, keys = keys, default = hansi.family),
+    eastasia.family = fpstruct(nrow = nrow, keys = keys, default = eastasia.family),
+    cs.family = fpstruct(nrow = nrow, keys = keys, default = cs.family),
+    vertical.align = fpstruct(nrow = nrow, keys = keys, default = vertical.align),
+    shading.color = fpstruct(nrow = nrow, keys = keys, default = shading.color)
+  )
+  class(x) <- "text_struct"
+  x
+}
+
+delete_style_row <- function(x, i) {
+  for (property in names(x)) {
+    x[[property]] <- delete_row_from_fpstruct(x[[property]], i)
+  }
+  x
+}
+delete_style_col <- function(x, j) {
+  for (property in names(x)) {
+    x[[property]] <- delete_col_from_fpstruct(x[[property]], j)
+  }
+  x
+}
+
+add_rows_to_struct <- function(x, nrows, first, ...) {
+  for (i in seq_len(length(x))) {
+    x[[i]] <- add_rows_fpstruct(x[[i]], nrows, first = first)
+  }
+  x
+}
+
+text_struct_to_df <- function(object, ...) {
+  data <- lapply(object, function(x) {
+    as.vector(x$data)
+  })
+  data$.row_id <- rep(seq_len(nrow(object$color$data)), ncol(object$color$data))
+  data$.col_id <- rep(object$color$keys, each = nrow(object$color$data))
+  data <- as.data.frame(data, stringsAsFactors = FALSE)
+  data$.col_id <- factor(data$.col_id, levels = object$color$keys)
+  data
+}
 # fpstruct ------
 
 fpstruct <- function(nrow, keys, default) {
