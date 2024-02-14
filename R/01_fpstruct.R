@@ -47,6 +47,62 @@ add_rows_fpstruct <- function(x, nrows, first, default = x$default, ...) {
   x
 }
 
+# par_struct -----
+par_struct <- function(nrow, keys,
+                       text.align = "left",
+                       line_spacing = 1,
+                       padding.bottom = 0, padding.top = 0,
+                       padding.left = 0, padding.right = 0,
+                       border.width.bottom = 0, border.width.top = 0, border.width.left = 0, border.width.right = 0,
+                       border.color.bottom = "transparent", border.color.top = "transparent", border.color.left = "transparent", border.color.right = "transparent",
+                       border.style.bottom = "solid", border.style.top = "solid", border.style.left = "solid", border.style.right = "solid",
+                       keep_with_next = FALSE,
+                       shading.color = "transparent", ...) {
+  x <- list(
+    text.align = fpstruct(nrow = nrow, keys = keys, default = text.align),
+    padding.bottom = fpstruct(nrow = nrow, keys = keys, default = padding.bottom),
+    padding.top = fpstruct(nrow = nrow, keys = keys, default = padding.top),
+    padding.left = fpstruct(nrow = nrow, keys = keys, default = padding.left),
+    padding.right = fpstruct(nrow = nrow, keys = keys, default = padding.right),
+    line_spacing = fpstruct(nrow = nrow, keys = keys, default = line_spacing),
+    border.width.bottom = fpstruct(nrow = nrow, keys = keys, default = border.width.bottom),
+    border.width.top = fpstruct(nrow = nrow, keys = keys, default = border.width.top),
+    border.width.left = fpstruct(nrow = nrow, keys = keys, default = border.width.left),
+    border.width.right = fpstruct(nrow = nrow, keys = keys, default = border.width.right),
+    border.color.bottom = fpstruct(nrow = nrow, keys = keys, default = border.color.bottom),
+    border.color.top = fpstruct(nrow = nrow, keys = keys, default = border.color.top),
+    border.color.left = fpstruct(nrow = nrow, keys = keys, default = border.color.left),
+    border.color.right = fpstruct(nrow = nrow, keys = keys, default = border.color.right),
+    border.style.bottom = fpstruct(nrow = nrow, keys = keys, default = border.style.bottom),
+    border.style.top = fpstruct(nrow = nrow, keys = keys, default = border.style.top),
+    border.style.left = fpstruct(nrow = nrow, keys = keys, default = border.style.left),
+    border.style.right = fpstruct(nrow = nrow, keys = keys, default = border.style.right),
+    shading.color = fpstruct(nrow = nrow, keys = keys, default = shading.color),
+    keep_with_next = fpstruct(nrow = nrow, keys = keys, default = keep_with_next)
+  )
+  class(x) <- "par_struct"
+  x
+}
+
+
+print.par_struct <- function(x, ...) {
+  dims <- dim(x$text.align$data)
+  cat("a par_struct with ", dims[1], " rows and ", dims[2], " columns", sep = "")
+}
+
+
+par_struct_to_df <- function(object, ...) {
+  data <- lapply(object, function(x) {
+    as.vector(x$data)
+  })
+  data$.row_id <- rep(seq_len(nrow(object$text.align$data)), ncol(object$text.align$data))
+  data$.col_id <- rep(object$text.align$keys, each = nrow(object$text.align$data))
+  data <- as.data.frame(data, stringsAsFactors = FALSE)
+  data$.col_id <- factor(data$.col_id, levels = object$text.align$keys)
+  data
+}
+
+
 
 # cell_struct -----
 cell_struct <- function(nrow, keys,
