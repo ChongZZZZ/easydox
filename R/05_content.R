@@ -215,7 +215,7 @@ as_chunk <- function(x, props = NULL, formatter = format_fun, ...) {
 #' ft
 as_sub <- function(x) {
   if (!inherits(x, "chunk")) {
-    x <- as_chunk(x, formatter = format_fun)
+    x
   }
   x$vertical.align <- "subscript"
   x
@@ -250,7 +250,7 @@ as_sub <- function(x) {
 #' ft
 as_sup <- function(x) {
   if (!inherits(x, "chunk")) {
-    x <- as_chunk(x, formatter = format_fun)
+    x
   }
   x$vertical.align <- "superscript"
   x
@@ -283,7 +283,7 @@ as_sup <- function(x) {
 #' ft
 as_b <- function(x) {
   if (!inherits(x, "chunk")) {
-    x <- as_chunk(x, formatter = format_fun)
+    x
   }
   x$bold <- TRUE
   x
@@ -313,7 +313,7 @@ as_b <- function(x) {
 #' ft
 as_i <- function(x) {
   if (!inherits(x, "chunk")) {
-    x <- as_chunk(x, formatter = format_fun)
+    x
   }
   x$italic <- TRUE
   x
@@ -344,7 +344,7 @@ as_i <- function(x) {
 #' ft
 colorize <- function(x, color) {
   if (!inherits(x, "chunk")) {
-    x <- as_chunk(x, formatter = format_fun)
+    x
   }
 
   x$color <- color
@@ -376,7 +376,7 @@ colorize <- function(x, color) {
 #' ft
 as_highlight <- function(x, color) {
   if (!inherits(x, "chunk")) {
-    x <- as_chunk(x, formatter = format_fun)
+    x
   }
   x$shading.color <- color
   x
