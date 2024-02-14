@@ -1,3 +1,53 @@
+# fpstruct ------
+
+fpstruct <- function(nrow, keys, default) {
+  ncol <- length(keys)
+  data <- rep(default, length.out = nrow * ncol)
+  map_data <- matrix(data = data, nrow = nrow, ncol = ncol, dimnames = list(NULL, keys))
+
+  x <- list(data = map_data, keys = keys, nrow = nrow, ncol = ncol, default = default)
+  class(x) <- "fpstruct"
+  x
+}
+
+delete_row_from_fpstruct <- function(x, i) {
+  x$data <- x$data[-i, , drop = FALSE]
+  x$nrow <- x$nrow - length(i)
+  x
+}
+
+delete_col_from_fpstruct <- function(x, j) {
+
+  if(is.null(x$data)) stop("unexpected error, could not find any data to drop")
+  x$data <- x$data[, !colnames(x$data) %in% j, drop = FALSE]
+  x$ncol <- x$ncol - length(j)
+  x$keys <- setdiff(x$keys, j)
+
+  x
+}
+
+
+#' @importFrom utils head tail
+add_rows_fpstruct <- function(x, nrows, first, default = x$default, ...) {
+  if (nrow(x$data) < 1) {
+    new <- matrix(rep(default, x$ncol * nrows), ncol = x$ncol)
+  } else if (first) {
+    default <- as.vector(head(x$data, n = 1))
+    new <- matrix(rep(default, each = nrows), ncol = x$ncol)
+  } else {
+    default <- as.vector(tail(x$data, n = 1))
+    new <- matrix(rep(default, each = nrows), ncol = x$ncol)
+  }
+  if (first) {
+    x$data <- rbind(new, x$data)
+  } else {
+    x$data <- rbind(x$data, new)
+  }
+  x$nrow <- nrow(x$data)
+  x
+}
+
+
 # cell_struct -----
 cell_struct <- function(nrow, keys,
                         vertical.align = "top", text.direction = "lrtb",
