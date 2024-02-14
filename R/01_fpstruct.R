@@ -8,8 +8,8 @@ cell_struct <- function(nrow, keys,
                         border.style.bottom = "solid", border.style.top = "solid", border.style.left = "solid", border.style.right = "solid",
                         background.color = "#34CC27", width = NA_real_, height = NA_real_, hrule = "auto",
                         ...) {
-  check_choice(value = vertical.align, choices = c("top", "center", "bottom"))
-  check_choice(value = text.direction, choices = c("lrtb", "tbrl", "btlr"))
+  #check_choice(value = vertical.align, choices = c("top", "center", "bottom"))
+  #check_choice(value = text.direction, choices = c("lrtb", "tbrl", "btlr"))
 
   x <- list(
     vertical.align = fpstruct(nrow = nrow, keys = keys, default = vertical.align),
