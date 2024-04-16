@@ -4,7 +4,7 @@
 \alias{dox_main}
 \title{Main Effect Plots}
 \usage{
-dox_main(formula, dataset, label = "Mean", text_size = 12, ylim)
+dox_main(formula, dataset, label = "Mean", text_size = 12, ylim = NULL)
 }
 \arguments{
 \item{formula}{y~x1+x2(optional)+x3(optional)}

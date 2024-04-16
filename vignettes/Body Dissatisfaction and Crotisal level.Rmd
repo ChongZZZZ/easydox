@@ -1,0 +1,332 @@
+---
+title: "Exploration of Body Dissatisfaction and Cortisol Level"
+author: "Chong Zhao"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-02-18"
+---
+```{r setup, include=FALSE,warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r,show_col_types = FALSE}
+library(readr)
+library(dplyr)
+data <- read_csv("~/Desktop/sta_map.csv")
+require(dplyr)
+data <- data %>%
+  mutate(condition = ifelse(Condition == "In", 1,
+                            ifelse(Condition == "Out", 2,
+                                   ifelse(Condition == "Pre", 0, NA))))
+data <- subset(data,select=-c(Condition))
+```
+## Correlation plot and plots
+
+```{r}
+library(corrplot)
+# Calculate the correlation matrix
+cor_matrix <- cor(data, use = "complete.obs")  # using complete.obs to handle missing values
+# Visualize the correlation matrix
+corrplot(cor_matrix)
+```
+The ? mark in the graph is because the body dissatisfaction only appear when ave HR==0 and BORG Pre==13
+
+```{r}
+library(corrplot)
+data_without_body_dissatisfaction <- subset(data,select=-c(`Body Dissatisfaction`))
+# Calculate the correlation matrix
+cor_matrix <- cor(data_without_body_dissatisfaction, use = "complete.obs")  # using complete.obs to handle missing values
+# Visualize the correlation matrix
+corrplot(cor_matrix)
+```
+
+# Making Subject into factor
+```{r}
+library(ggplot2)
+data_graph= data
+data_graph$Subject <- as.factor(data$Subject)
+```
+
+# Plot between highly correlated items
+```{r}
+library(ggplot2)
+
+ggplot(data_graph, aes(x = `ASI-R Self-Eval`, y = `ASR-I Motiv`, color = Subject)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "ASI-R Self-Eval", y = "ASR-I Motiv", color = "Subject")
+
+ggplot(data_graph, aes(x = `Composite ASI-R`, y = `ASR-I Motiv`, color = Subject)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "Composite ASI-R", y = "ASR-I Motiv", color = "Subject")
+
+ggplot(data_graph, aes(x = `Self-Efficacy` , y =`ASR-I Motiv` , color = Subject)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "Self-Efficacy", y = "ASR-I Motiv", color = "Subject")
+
+ggplot(data_graph, aes(x = FS , y =`PreTFS` , color = Subject)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "FS", y = "PreTFAS", color = "Subject")
+
+ggplot(data_graph, aes(x =`Composite ASI-R` , y =`PreTFS` , color = Subject)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "Composite ASI-R", y = "PreTFS", color = "Subject")
+
+ggplot(data_graph, aes(x =data_graph$Beliefs , y =FS , color = Subject)) +
+  geom_point() +
+  theme_minimal() +
+  labs(x = "FS", y = "Belief", color = "Subject")
+
+```
+
+
+## Body Dissatisfaction
+```{r}
+#require(leap)
+# drop other response variable and na column
+body_data <- subset(data,select=-c(`Ave HR`,FS,FAS,BAI, `Log Conc of Cort`,`BORG RPE`))
+
+body_data <- body_data[!is.na(body_data$`Body Dissatisfaction`), ]
+```
+
+# VIF
+```{r}
+require(car)
+
+# VIF of the model
+model= lm(`Body Dissatisfaction`~Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFS+PreTFAS+Beliefs+BMI+MAST+condition+Subject , data =body_data )
+vif(model)
+```
+
+# Best Subset
+```{r}
+# Best Subset
+library(leaps)
+regfit.full = regsubsets(`Body Dissatisfaction`~Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFS+PreTFAS+Beliefs+BMI+MAST+condition+Subject, data = body_data, nvmax = 14)
+reg.summary = summary(regfit.full)
+reg.summary
+reg.summary$adjr2
+```
+
+
+# Adjusted R^2 Plot
+```{r}
+library(ggvis)
+adjr2 <- as.data.frame(reg.summary$adjr2)
+names(adjr2) <- "adjusted R2"
+
+adjr2 %>% 
+    ggvis(x = ~ c(1:nrow(adjr2)), y = ~`adjusted R2`) %>%
+    layer_points(fill = ~`adjusted R2`) %>%
+    add_axis("y", title = "Adjusted R^2") %>% 
+    add_axis("x", title = "Number of Variables")
+```
+
+12 variables model has the highest adjusted R^2. However, we still need to take the condition variable into account.
+
+
+# Choosing the best model
+```{r}
+model= lm(`Body Dissatisfaction`~Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFAS+Beliefs+BMI+MAST+condition+Subject , data =body_data )
+summary(model)
+```
+
+# Residual Plots
+```{r}
+require(easydox2)
+dox_resid(`Body Dissatisfaction`~Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFAS+Beliefs+BMI+MAST+condition+Subject, body_data, plot = 1, bins = 30)
+dox_resid(`Body Dissatisfaction`~Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFAS+Beliefs+BMI+MAST+condition+Subject, body_data, plot = 2, bins = 30)
+dox_resid(`Body Dissatisfaction`~Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFAS+Beliefs+BMI+MAST+condition+Subject, body_data, plot = 3, bins = 30)
+```
+
+```{r}
+library(ggplot2)
+data_graph= body_data
+data_graph$`condition` <- as.factor(body_data$`condition`)
+```
+
+# Adding interaction term
+```{r}
+model= lm(`Body Dissatisfaction`~(Age+`HR Time`+ `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+PreTBAI+PreTFAS+Beliefs+BMI+MAST+condition+Subject)^2 , data =body_data)
+stepwise_model <- step(model, direction="both", trace=FALSE)
+summary(stepwise_model)
+```
+
+##  Cortisol Level
+```{r}
+#subset the data
+cortisol_data <- subset(data,select=-c(`Ave HR`,FS,FAS,BAI,`Body Dissatisfaction` ,`BORG RPE`))
+cortisol_data <- cortisol_data[!is.na(cortisol_data$`Log Conc of Cort`), ]
+```
+
+
+# VIF of the model
+```{r}
+require(car)
+model= lm(`Log Conc of Cort`~Age+`HR Time`+ + `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+PreTFAS+Beliefs+BMI+MAST+condition , data =cortisol_data )
+vif(model)
+```
+
+
+# Best Subset
+```{r}
+# Best Subset
+library(leaps)
+regfit.full = regsubsets(`Log Conc of Cort`~Age+`HR Time`+ + `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+PreTFAS+Beliefs+BMI+MAST+condition, data = cortisol_data, nvmax = 14)
+reg.summary = summary(regfit.full)
+reg.summary
+reg.summary$adjr2
+```
+
+# Adjusted R^2 Plot
+```{r}
+library(ggvis)
+adjr2 <- as.data.frame(reg.summary$adjr2)
+names(adjr2) <- "adjusted R2"
+
+adjr2 %>% 
+    ggvis(x = ~ c(1:nrow(adjr2)), y = ~`adjusted R2`) %>%
+    layer_points(fill = ~`adjusted R2`) %>%
+    add_axis("y", title = "Adjusted R^2") %>% 
+    add_axis("x", title = "Number of Variables")
+```
+
+
+# Choosing the best model
+```{r}
+model= lm(`Log Conc of Cort`~Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition , data =cortisol_data )
+summary(model)
+```
+
+# Residual Plot
+```{r}
+require(easydox2)
+dox_resid(`Log Conc of Cort`~Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition , data =cortisol_data, plot = 1, bins = 30)
+dox_resid(`Log Conc of Cort`~Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition , data =cortisol_data, plot = 2, bins = 30)
+dox_resid(`Log Conc of Cort`~Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition , data =cortisol_data, plot = 3, bins = 30)
+dox_resid(`Log Conc of Cort`~Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition , data =cortisol_data, plot = 4, bins = 30)
+```
+
+# Adding Interaction Term
+```{r}
+library(ggplot2)
+data_graph= cortisol_data
+data_graph$`condition` <- as.factor(cortisol_data$`condition`)
+```
+
+```{r}
+lm1 <- lm(`Log Conc of Cort` ~ `Self-Efficacy`, data=data_graph, subset=(condition==0))
+lm2 <- lm(`Log Conc of Cort` ~ `Self-Efficacy`, data=data_graph, subset=(condition==1))
+lm3 <- lm(`Log Conc of Cort` ~ `Self-Efficacy`, data=data_graph, subset=(condition==2))
+
+# Base plot
+plot(`Log Conc of Cort` ~ `Self-Efficacy`, data = data_graph, col=as.numeric(condition), pch=19,
+     xlab = "Cortisol", ylab = "Self-Efficacy",
+     main = "Scatter Plot with Three Regression Lines")
+
+# Add regression lines
+abline(lm1, col="red")
+abline(lm2, col="blue")
+abline(lm3, col="green")
+```
+
+```{r}
+lm1 <- lm(`Log Conc of Cort` ~ PreTBAI, data=data_graph, subset=(condition==0))
+lm2 <- lm(`Log Conc of Cort` ~ PreTBAI, data=data_graph, subset=(condition==1))
+lm3 <- lm(`Log Conc of Cort` ~ PreTBAI, data=data_graph, subset=(condition==2))
+
+# Base plot
+plot(`Log Conc of Cort` ~ `PreTBAI`, data = data_graph, col=as.numeric(condition), pch=19,
+     xlab = "Cortisol", ylab = "PreTBAI",
+     main = "Scatter Plot with Three Regression Lines")
+
+# Add regression lines
+abline(lm1, col="red")
+abline(lm2, col="blue")
+abline(lm3, col="green")
+```
+
+# Adding interaction term
+```{r}
+model= lm(`Log Conc of Cort`~(Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition)^2 , data =cortisol_data)
+stepwise_model <- step(model, direction="both", trace=FALSE)
+summary(stepwise_model)
+```
+
+
+# Experimental (not sure yet)
+```{r}
+library(leaps)
+regfit.full = regsubsets(`Log Conc of Cort`~(Age+`HR Time`+`Self-Efficacy`+Subject+MAST+PreTBAI+PreTFS +PreTFAS+condition)^2 , data =cortisol_data, nvmax = 60,really.big=T)
+reg.summary = summary(regfit.full)
+reg.summary
+reg.summary$adjr2
+```
+
+##  BAI
+```{r}
+#subset the data
+BAI_data <- subset(data,select=-c(`Ave HR`,FS,FAS,`Log Conc of Cort`,`Body Dissatisfaction` ,`BORG RPE`))
+BAI_data <- BAI_data[!is.na(BAI_data$BAI), ]
+```
+
+
+# VIF of the model
+```{r}
+require(car)
+model= lm(BAI~Age+`HR Time`+ + `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+PreTFAS+Beliefs+BMI+MAST+condition , data =BAI_data )
+vif(model)
+```
+# Best Subset
+```{r}
+# Best Subset
+library(leaps)
+regfit.full = regsubsets(BAI~Age+`HR Time`+ + `ASI-R Self-Eval`+ `Composite ASI-R`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+PreTFAS+Beliefs+BMI+MAST+condition , data =BAI_data , nvmax = 14)
+reg.summary = summary(regfit.full)
+reg.summary
+reg.summary$adjr2
+```
+
+# Adjusted R^2 Plot
+```{r}
+library(ggvis)
+adjr2 <- as.data.frame(reg.summary$adjr2)
+names(adjr2) <- "adjusted R2"
+
+adjr2 %>% 
+    ggvis(x = ~ c(1:nrow(adjr2)), y = ~`adjusted R2`) %>%
+    layer_points(fill = ~`adjusted R2`) %>%
+    add_axis("y", title = "Adjusted R^2") %>% 
+    add_axis("x", title = "Number of Variables")
+```
+
+
+# Choosing the best model
+```{r}
+model= lm(BAI~Age+`ASI-R Self-Eval`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+Beliefs+BMI+condition , data =BAI_data)
+summary(model)
+```
+# Residual Plot
+```{r}
+require(easydox2)
+dox_resid(BAI~Age+`ASI-R Self-Eval`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+Beliefs+BMI+condition , data =BAI_data, plot = 1, bins = 30)
+dox_resid(BAI~Age+`ASI-R Self-Eval`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+Beliefs+BMI+condition , data =BAI_data, plot = 2, bins = 30)
+dox_resid(BAI~Age+`ASI-R Self-Eval`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+Beliefs+BMI+condition , data =BAI_data, plot = 3, bins = 30)
+dox_resid(BAI~Age+`ASI-R Self-Eval`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+Beliefs+BMI+condition , data =BAI_data, plot = 4, bins = 30)
+```
+
+```{r}
+model= lm(BAI~(Age+`ASI-R Self-Eval`+`ASR-I Motiv`+`Self-Efficacy`+Subject+PreTBAI+PreTFS+Beliefs+BMI+condition)^2 , data =BAI_data)
+
+
+stepwise_model <- step(model, direction="both", trace=FALSE)
+
+summary(stepwise_model)
+```
+
+
